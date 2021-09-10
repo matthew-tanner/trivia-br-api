@@ -1,13 +1,48 @@
 const express = require("express");
 const socket = require("socket.io");
+const cors = require("cors");
+
+const { appPort, dbName } = require("./config/index");
+const controllers = require("./controllers");
+const dbConn = require("./db/index");
 
 const app = new express();
 
-app.use("/", (req, res) => res.status(200).send("test"));
+app.use(express.json());
+app.use(cors());
+app.get("/", (req, res) => res.status(200).send("ping"));
+//app.use("/user", controllers.UserController);
 
-const server = app.listen(3000, () => console.log("listening on 3000"));
-const io = socket(server);
+dbConn
+  .authenticate()
+  .then(() => dbConn.sync())
+  .then(() => {
+    console.log(`connected to database ${dbName}`);
+    const server = app.listen(appPort, () => console.log(`Server running on ${appPort}...`));
 
-io.on("connection", (socket) => {
-  console.log("socket connected", socket);
-})
+    const io = socket(server, {
+      transports: ["polling"],
+      cors: {
+        cors: {
+          origin: "*",
+        },
+      },
+    });
+    
+    io.on("connection", (socket) => {
+      console.log(`New connection : ${socket.id}`);
+      
+      controllers.UserController.respond(socket);
+    
+      socket.on("disconnect", () => {
+        console.log(`socket ${socket.id} disconnected.`);
+        socket.broadcast.emit("logoff", `user: ${socket.id} disconnected`);
+      });
+    });
+  })
+  .catch((err) => {
+    console.log(`${err}`);
+  });
+
+
+

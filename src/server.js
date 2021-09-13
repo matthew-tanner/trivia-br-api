@@ -31,7 +31,7 @@ dbConn
     
     io.on("connection", (socket) => {
       console.log(`New connection : ${socket.id}`);
-      
+
       controllers.UserController.respond(socket);
     
       socket.on("disconnect", () => {
@@ -43,6 +43,3 @@ dbConn
   .catch((err) => {
     console.log(`${err}`);
   });
-
-
-

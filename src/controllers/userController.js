@@ -16,6 +16,7 @@ const respond = (socket) => {
         passwordHash: hashed,
         displayName: displayName,
       });
+      console.log(createUser)
       callback({
         email: createUser.emailAddress,
         displayName: createUser.displayName,

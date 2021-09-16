@@ -18,6 +18,8 @@ const respond = (socket) => {
       });
       console.log(createUser)
       callback({
+        status: 1,
+        message: "success",
         email: createUser.emailAddress,
         displayName: createUser.displayName,
       });
@@ -25,11 +27,13 @@ const respond = (socket) => {
       console.log(`Error - ${err.original.detail}`);
       if (err instanceof UniqueConstraintError) {
         callback({
-          status: "email or display name in use",
+          status: 0,
+          message: "email or display name in use",
         });
       }
       callback({
-        status: err,
+        status: 0,
+        message: err,
       });
     }
   });
@@ -52,6 +56,7 @@ const respond = (socket) => {
           });
           console.log(`logged in user - ${getUser.emailAddress}`);
           callback({
+            status: 1,
             email: getUser.emailAddress,
             displayName: getUser.displayName,
             sessionToken: newToken,
@@ -59,12 +64,14 @@ const respond = (socket) => {
         }
       } else {
         callback({
-          status: "Unauthorized",
+          status: 0,
+          message: "Unauthorized"
         });
       }
     } catch (err) {
       callback({
-        status: err,
+        status: 0,
+        message: err
       });
     }
   });

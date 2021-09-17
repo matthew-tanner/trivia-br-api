@@ -4,7 +4,7 @@ const { UniqueConstraintError } = require("sequelize/lib/errors");
 const { UserModel } = require("../models");
 const { jwtSecret } = require("../config");
 
-const respond = (socket) => {
+const respond = (io, socket) => {
   socket.on("register", async (data, callback) => {
     const { email, password, displayName } = data;
 

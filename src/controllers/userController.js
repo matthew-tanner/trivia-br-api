@@ -57,6 +57,7 @@ const respond = (io, socket) => {
           console.log(`logged in user - ${getUser.emailAddress}`);
           callback({
             status: 1,
+            userId: getUser.id,
             email: getUser.emailAddress,
             displayName: getUser.displayName,
             sessionToken: newToken,

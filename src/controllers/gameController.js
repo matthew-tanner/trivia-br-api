@@ -35,12 +35,18 @@ const respond = (io, socket) => {
   });
 
   socket.on("joingame", async (data, callback) => {
-    const { gameId } = data;
+    const { gameId, displayName } = data;
 
     try {
       socket.join(gameId);
-      console.log(`socket id ${socket.id} joined room ${gameId}`);
-      io.sockets.in(gameId).emit("joinedgame", {gameId: gameId, playerId: socket.id});
+      console.log(`player [${displayName}] - socket id ${socket.id} joined room ${gameId}`);
+      io.sockets.in(gameId).emit("joinedgame", {gameId: gameId, playerId: socket.id, displayName: displayName});
+      callback({
+        status: 1,
+        gameId: gameId,
+        displayName: displayName,
+        socketId: socket.id
+      })
 
     } catch (err) {
       callback({

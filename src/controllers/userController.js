@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { UniqueConstraintError } = require("sequelize/lib/errors");
-const { UserModel } = require("../models");
+const { User } = require("../models");
 const { jwtSecret } = require("../config");
 
 const respond = (io, socket) => {
@@ -11,10 +11,11 @@ const respond = (io, socket) => {
     try {
       const hashed = bcrypt.hashSync(password, 12);
 
-      const createUser = await UserModel.create({
+      const createUser = await User.create({
         emailAddress: email,
-        passwordHash: hashed,
+        password: hashed,
         displayName: displayName,
+        isAdmin: false
       });
       console.log(createUser)
       callback({
@@ -24,7 +25,7 @@ const respond = (io, socket) => {
         displayName: createUser.displayName,
       });
     } catch (err) {
-      console.log(`Error - ${err.original.detail}`);
+      console.log(`Error - ${err}`);
       if (err instanceof UniqueConstraintError) {
         callback({
           status: 0,
@@ -42,7 +43,7 @@ const respond = (io, socket) => {
     const { email, password } = data;
 
     try {
-      const getUser = await UserModel.findOne({
+      const getUser = await User.findOne({
         where: {
           emailAddress: email,
         },
@@ -81,7 +82,7 @@ const respond = (io, socket) => {
     const { displayName } = data;
 
     try {
-      const getUser = await UserModel.findOne({
+      const getUser = await User.findOne({
         where: {
           displayName: displayName,
         },

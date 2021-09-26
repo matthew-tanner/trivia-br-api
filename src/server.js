@@ -11,7 +11,6 @@ const app = new express();
 app.use(express.json());
 app.use(cors());
 app.get("/", (req, res) => res.status(200).send("ping"));
-//app.use("/user", controllers.UserController);
 
 dbConn
   .authenticate()
@@ -31,7 +30,7 @@ dbConn
     
     io.on("connection", (socket) => {
       console.log(`New connection : ${socket.id}`);
-      console.log(`Total Clients Connect - ${io.engine.clientsCount}`)
+      //console.log(`Total Clients Connect - ${io.engine.clientsCount}`)
       rooms = Array.from(io.sockets.adapter.rooms);
       //console.log(rooms.filter(room => !room[1].has(room[0])));
 

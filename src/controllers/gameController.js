@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { UniqueConstraintError } = require("sequelize/lib/errors");
-const { UserModel } = require("../models");
+const { User, Game } = require("../models");
 const { jwtSecret } = require("../config");
 const crypto = require("crypto");
 
@@ -9,17 +9,38 @@ const respond = (io, socket) => {
   socket.on("creategame", async (data, callback) => {
     const gameId = crypto.randomBytes(21).toString("hex");
     console.log(gameId);
+    const { userId, questions } = data;
+    let storeQuestions = [];
+    questions.map((q) => {
+      storeQuestions.push({question: q.question, type: q.type, answer: q.correct_answer, answers: [q.incorrect_answers]})
+    })
     try {
       socket.join(gameId);
       console.log(`socket id ${socket.id} created and joined room ${gameId}`);
-      rooms = Array.from(io.sockets.adapter.rooms);
-      console.log(rooms.filter(room => !room[1].has(room[0])));
-      callback({
-        status: 1,
-        gameId: gameId,
-      })
+      //console.log(storeQuestions);
+
+      const createGame = await Game.create(
+        {gameId: gameId,
+        hostId: userId,
+        userList: [{
+          userId: userId,
+        }],
+        isComplete: false,
+        questions: storeQuestions,}
+      )
+      if(createGame){
+        callback({
+          status: 1,
+          gameId: gameId,
+        })
+      }else{
+        callback({
+          status: 0,
+          message: "error...",
+        });
+      }
     } catch (err) {
-      console.log(`Error - ${err.original.detail}`);
+      console.log(`Error - ${err}`);
       if (err instanceof UniqueConstraintError) {
         callback({
           status: 0,
@@ -40,14 +61,22 @@ const respond = (io, socket) => {
     try {
       socket.join(gameId);
       console.log(`player [${displayName}] - socket id ${socket.id} joined room ${gameId}`);
-      io.sockets.in(gameId).emit("joinedgame", {gameId: gameId, playerId: socket.id, displayName: displayName});
-      callback({
-        status: 1,
-        gameId: gameId,
-        displayName: displayName,
-        socketId: socket.id
+      const getGame = Game.findOne({
+        where: {
+          gameId: gameId
+        }
       })
 
+      if(getGame){
+        io.sockets.in(gameId).emit("joinedgame", {gameId: gameId, playerId: socket.id, displayName: displayName, userList: getGame.userList});
+        callback({
+          status: 1,
+          gameId: gameId,
+          userList: getGame.userList,
+          displayName: displayName,
+          socketId: socket.id
+        })
+      }
     } catch (err) {
       callback({
         status: 0,

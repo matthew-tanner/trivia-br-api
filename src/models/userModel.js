@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
-    password: {
+    passwordHash: {
       type: DataTypes.STRING,
       allowNull: false,
     },

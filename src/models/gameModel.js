@@ -5,6 +5,14 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
+    hostId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    userList: {
+      type: DataTypes.JSON,
+      allowNull: false,
+    },
     isComplete: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

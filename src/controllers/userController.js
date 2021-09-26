@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const { UniqueConstraintError } = require("sequelize/lib/errors");
 const { User } = require("../models");
 const { jwtSecret } = require("../config");
+const validateToken = require("../utils/validateToken");
 
 const respond = (io, socket) => {
   socket.on("register", async (data, callback) => {
@@ -13,7 +14,7 @@ const respond = (io, socket) => {
 
       const createUser = await User.create({
         emailAddress: email,
-        password: hashed,
+        passwordHash: hashed,
         displayName: displayName,
         isAdmin: false
       });
@@ -78,23 +79,22 @@ const respond = (io, socket) => {
     }
   });
 
-  socket.on("userInfo", async (data, callback) => {
-    const { displayName } = data;
+  socket.on("userinfo", async (data, callback) => {
+    const { token } = data;
+    console.log(data)
 
     try {
-      const getUser = await User.findOne({
-        where: {
-          displayName: displayName,
-        },
-      });
-
-      if (getUser) {
+      const validateUser = await validateToken(token);
+      
+      if (validateUser) {
         callback({
-          displayName: getUser.displayName,
+          status: 1,
+          displayName: validateUser.displayName,
+          userId: validateUser.id
         });
       } else {
         callback({
-          status: "User not found...",
+          status: 0,
         });
       }
     } catch (err) {

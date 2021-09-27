@@ -16,9 +16,9 @@ const respond = (io, socket) => {
         emailAddress: email,
         passwordHash: hashed,
         displayName: displayName,
-        isAdmin: false
+        isAdmin: false,
       });
-      console.log(createUser)
+      console.log(createUser);
       callback({
         status: 1,
         message: "success",
@@ -68,34 +68,44 @@ const respond = (io, socket) => {
       } else {
         callback({
           status: 0,
-          message: "Unauthorized"
+          message: "Unauthorized",
         });
       }
     } catch (err) {
       callback({
         status: 0,
-        message: err
+        message: err,
       });
     }
   });
 
   socket.on("userinfo", async (data, callback) => {
     const { token } = data;
-    console.log(data)
+    console.log(data);
 
     try {
-      const validateUser = await validateToken(token);
-      
-      if (validateUser) {
-        callback({
-          status: 1,
-          displayName: validateUser.displayName,
-          userId: validateUser.id
-        });
-      } else {
+      if (token) {
+        const validateUser = await validateToken(token);
+
+        if (validateUser) {
+          callback({
+            status: 1,
+            displayName: validateUser.displayName,
+            userId: validateUser.id,
+          });
+        } else {
+          callback({
+            status: 0,
+            message: "invalid token"
+          });
+        }
+      }else{
         callback({
           status: 0,
-        });
+          message: "no token",
+          displayName: "",
+          userId: 0
+        })
       }
     } catch (err) {
       callback({

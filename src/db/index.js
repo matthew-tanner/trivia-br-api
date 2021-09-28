@@ -3,7 +3,7 @@ const { dbURL, environment } = require("../config/index");
 
 const sequelize = new Sequelize(dbURL, {
   dialect: "postgres",
-  ssl: true,
+  ssl: environment === "production",
   logging: false,
 });
 

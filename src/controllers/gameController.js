@@ -8,7 +8,6 @@ const crypto = require("crypto");
 const respond = (io, socket) => {
   socket.on("creategame", async (data, callback) => {
     const gameId = crypto.randomBytes(6).toString("hex");
-    console.log(gameId);
     const { userId, displayName, questions } = data;
     let storeQuestions = [];
     questions.map((q) => {
@@ -41,6 +40,8 @@ const respond = (io, socket) => {
           status: 1,
           gameId: gameId,
           hostId: createGame.hostId,
+          userId: userId,
+          displayName: displayName,
         });
       } else {
         callback({
@@ -76,22 +77,18 @@ const respond = (io, socket) => {
       });
 
       if (getGame) {
-        console.log("game found...");
         const query = {
           where: {
             gameId: gameId,
           },
         };
         let newUserList = getGame.userList;
-        newUserList.push({ userId: userId, displayName: displayName , score: 0 });
-        console.log(newUserList);
+        newUserList.push({ userId: userId, displayName: displayName, score: 0 });
 
         const newData = {
           userList: newUserList,
         };
-        console.log(newData);
         const updateGame = await Game.update(newData, query);
-        console.log(updateGame);
         io.sockets.in(gameId).emit("joinedgame", {
           gameId: gameId,
           playerId: socket.id,
@@ -128,9 +125,9 @@ const respond = (io, socket) => {
       if (getGame) {
         console.log("sending game start socket event");
         io.sockets.in(gameId).emit("gamestarted"),
-          {
-            gameId: gameId,
-          };
+        {
+          gameId: gameId,
+        };
         callback({
           status: 1,
           gameId: getGame.gameId,
@@ -147,10 +144,31 @@ const respond = (io, socket) => {
     }
   });
 
-  socket.on("endgame", async(data, callback) => {
-    const {gameId} = data;
+  socket.on("endgame", async (data, callback) => {
+    const { gameId } = data;
 
-    io.sockets.in(gameId).emit("gamestopped");
+    try {
+      const query = {
+        where: {
+          gameId: gameId,
+        },
+        returning: true,
+        plain: true,
+      };
+
+      data = {
+        isComplete: true,
+      };
+
+      await Game.update(data, query);
+      io.sockets.in(gameId).emit("gamestopped");
+
+
+    } catch (err) {
+      console.log(err);
+    }
+
+
   })
 
   socket.on("nextquestion", async (data, callback) => {
@@ -164,22 +182,29 @@ const respond = (io, socket) => {
         },
       });
       io.sockets.in(gameId).emit("getnextquestion"),
-        {
-          gameId: gameId,
-        };
-      
-        // io.sockets.in(gameId).emit("updateusers", {
-        //   gameId: gameId,
-        //   userList: getGame.userList,
-        // });
+      {
+        gameId: gameId,
+      };
     } catch (err) {
       console.log(err);
     }
   });
 
+  socket.on("questioncountdown", async (data) => {
+    const {gameId} = data
+    let counter = 15;
+    const qCountDown = setInterval(()=>{
+      io.sockets.in(gameId).emit("counter", counter);
+      counter--
+      if (counter === 0){
+        io.sockets.emit("counter", counter);
+        clearInterval(qCountDown);
+      }
+    }, 1000)
+  })
+
   socket.on("correctanswer", async (data, callback) => {
     const { gameId, userId, score } = data;
-    console.log(data);
 
     try {
       console.log(`updating score for ${userId} in room ${gameId}`);
@@ -211,16 +236,6 @@ const respond = (io, socket) => {
         gameId: gameId,
         userList: getGame.userList,
       });
-      // const newGameList = await Game.findOne({
-      //   where: {
-      //     gameId: gameId,
-      //   },
-      // });
-      // console.log("updating score and sending event")
-      // io.sockets.in(gameId).emit("updatescore", {
-      //   gameId: gameId,
-      //   userList: newGameList.userList,
-      // });
     } catch (err) {
       console.log(err);
     }
@@ -237,7 +252,6 @@ const respond = (io, socket) => {
       });
 
       if (getGame) {
-        console.log(getGame.gameId, getGame.userList);
         callback({
           status: 1,
           gameId: getGame.gameId,

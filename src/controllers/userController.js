@@ -18,7 +18,6 @@ const respond = (io, socket) => {
         displayName: displayName,
         isAdmin: false,
       });
-      console.log(createUser);
       callback({
         status: 1,
         message: "success",
@@ -63,6 +62,7 @@ const respond = (io, socket) => {
             email: getUser.emailAddress,
             displayName: getUser.displayName,
             sessionToken: newToken,
+            isAdmin: getUser.isAdmin,
           });
         }
       } else {
@@ -81,7 +81,6 @@ const respond = (io, socket) => {
 
   socket.on("userinfo", async (data, callback) => {
     const { token } = data;
-    console.log(data);
 
     try {
       if (token) {

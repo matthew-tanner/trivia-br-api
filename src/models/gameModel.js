@@ -13,6 +13,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.JSON,
       allowNull: false,
     },
+    winner: {
+      type: DataTypes.JSON,
+    },
     isComplete: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

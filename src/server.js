@@ -30,9 +30,7 @@ dbConn
     
     io.on("connection", (socket) => {
       console.log(`New connection : ${socket.id}`);
-      //console.log(`Total Clients Connect - ${io.engine.clientsCount}`)
       rooms = Array.from(io.sockets.adapter.rooms);
-      //console.log(rooms.filter(room => !room[1].has(room[0])));
 
       controllers.UserController.respond(io, socket);
       controllers.GameController.respond(io, socket);

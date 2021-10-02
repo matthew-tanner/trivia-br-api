@@ -15,7 +15,7 @@ const validateToken = async (token) => {
       }
     }
   } catch (err) {
-    console.log(err);
+    return ({status: 0})
   }
 };
 

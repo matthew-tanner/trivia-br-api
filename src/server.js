@@ -20,7 +20,7 @@ dbConn
     const server = app.listen(appPort, () => console.log(`Server running on ${appPort}...`));
 
     const io = socket(server, {
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
       cors: {
         cors: {
           origin: "*",

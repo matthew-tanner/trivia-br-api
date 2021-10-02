@@ -101,6 +101,7 @@ const respond = (io, socket) => {
           userList: updateGame.userList,
           hostId: updateGame.hostId,
           displayName: displayName,
+          userId: userId,
           socketId: socket.id,
         });
       }

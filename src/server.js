@@ -21,6 +21,7 @@ dbConn
 
     const io = socket(server, {
       transports: ["websocket", "polling"],
+      log: true,
       cors: {
         cors: {
           origin: "*",

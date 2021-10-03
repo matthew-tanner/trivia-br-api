@@ -89,7 +89,7 @@ const respond = (io, socket) => {
           userList: newUserList,
         };
         const updateGame = await Game.update(newData, query);
-        io.sockets.in(gameId).emit("joinedgame", {
+        io.to(gameId).emit("joinedgame", {
           gameId: gameId,
           playerId: socket.id,
           displayName: displayName,

@@ -35,6 +35,7 @@ dbConn
 
       controllers.UserController.respond(io, socket);
       controllers.GameController.respond(io, socket);
+      controllers.AdminController.respond(io, socket);
     
       socket.on("disconnect", () => {
         console.log(`socket ${socket.id} disconnected.`);

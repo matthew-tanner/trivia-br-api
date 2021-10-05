@@ -146,7 +146,7 @@ const respond = (io, socket) => {
   });
 
   socket.on("endgame", async (data, callback) => {
-    const { gameId } = data;
+    const { gameId, winner } = data;
 
     try {
       const query = {
@@ -159,6 +159,7 @@ const respond = (io, socket) => {
 
       data = {
         isComplete: true,
+        winner: data.winner
       };
 
       await Game.update(data, query);

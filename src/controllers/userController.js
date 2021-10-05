@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { UniqueConstraintError } = require("sequelize/lib/errors");
-const { User } = require("../models");
+const { User, Game } = require("../models");
 const { jwtSecret } = require("../config");
 const validateToken = require("../utils/validateToken");
 
@@ -91,6 +91,7 @@ const respond = (io, socket) => {
             status: 1,
             displayName: validateUser.displayName,
             userId: validateUser.id,
+            isAdmin: validateUser.isAdmin
           });
         } else {
           callback({
@@ -99,6 +100,46 @@ const respond = (io, socket) => {
           });
         }
       }else{
+        callback({
+          status: 0,
+          message: "no token",
+          displayName: "",
+          userId: 0
+        })
+      }
+    } catch (err) {
+      callback({
+        status: err,
+      });
+    }
+  });
+
+  socket.on("usergamedata", async (data, callback) => {
+    const { token, userId } = data;
+
+    try {
+      if (token) {
+        const validateUser = await validateToken(token);
+        if (validateUser) {
+          const getGames = await Game.findAll({
+            where: {
+              hostId: userId,
+              isComplete: true,
+            }
+          })
+          callback({
+            status: 1,
+            displayName: validateUser.displayName,
+            userId: validateUser.id,
+            games: getGames
+          });
+        } else {
+          callback({
+            status: 0,
+            message: "invalid token"
+          });
+        }
+      } else {
         callback({
           status: 0,
           message: "no token",

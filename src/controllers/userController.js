@@ -153,6 +153,44 @@ const respond = (io, socket) => {
       });
     }
   });
+
+  socket.on("deleteaccount", async (data, callback) => {
+    const { token, userId } = data;
+
+    try {
+      if (token) {
+        const validateUser = await validateToken(token);
+        if (validateUser) {
+          await User.destroy({
+            where: {
+              id: userId
+            }
+          })
+          
+          callback({
+            status: 1,
+            userId: userId,
+          });
+        } else {
+          callback({
+            status: 0,
+            message: "Could not delete account"
+          });
+        }
+      } else {
+        callback({
+          status: 0,
+          message: "no token",
+          displayName: "",
+          userId: 0
+        })
+      }
+    } catch (err) {
+      callback({
+        status: err,
+      });
+    }
+  });
 };
 
 module.exports = {
